@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Copy, Check, Circle } from "lucide-react";
 import { useStytch, useStytchUser } from "@stytch/nextjs";
-import { useCrossmint } from "@crossmint/client-sdk-react-ui";
 import type { OrderIntentRegistration, OrderIntentResponse, PaymentMethodResponse } from "@/lib/crossmint-types";
 import { deleteOrderIntent, fetchAllData, fetchOrderIntent, removePaymentMethod } from "@/lib/crossmint-api";
 import { isRevealable, resolveAllowanceSelection, isRegistrationSettled, isUsable } from "@/lib/rails";
@@ -15,6 +14,7 @@ import { IssueCardPermission } from "@/components/issue-card-permission";
 import { OrderIntentsList } from "@/components/order-intents-list";
 import { RevealCardDetails } from "@/components/reveal-card-details";
 import { ApiTimeline } from "@/components/api-timeline";
+import { UsdcWalletPanel } from "@/components/usdc-wallet-panel";
 
 const TEST_CARD = "4242 4242 4242 4242";
 
@@ -130,7 +130,6 @@ function StepHeader({ step, title, subtitle }: { step: string; title: string; su
 export default function Page() {
   const stytch = useStytch();
   const { user, isInitialized } = useStytchUser();
-  const { setJwt } = useCrossmint();
   const router = useRouter();
 
   const userEmail = user?.emails?.[0]?.email ?? "";
@@ -142,11 +141,6 @@ export default function Page() {
       router.replace("/login");
     }
   }, [isInitialized, user, router]);
-
-  useEffect(() => {
-    const tokens = stytch.session.getTokens();
-    if (tokens?.session_jwt) setJwt(tokens.session_jwt);
-  }, [stytch, user, setJwt]);
 
   const [savedCards, setSavedCards] = useState<PaymentMethodResponse[]>([]);
   const [orderIntents, setOrderIntents] = useState<OrderIntentResponse[]>([]);
@@ -328,6 +322,8 @@ export default function Page() {
 
         {/* Content */}
         <div className="space-y-7">
+
+          <UsdcWalletPanel email={userEmail} />
 
           {loadError && (
             <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-800">
